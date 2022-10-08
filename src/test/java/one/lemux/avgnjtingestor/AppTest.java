@@ -30,7 +30,7 @@ import org.junit.Test;
  * Unit test for simple App.
  */
 public class AppTest {
-    
+
     private final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
     private final ByteArrayOutputStream errStream = new ByteArrayOutputStream();
     private final PrintStream sysOut = System.out;
@@ -46,29 +46,68 @@ public class AppTest {
 
     @Before
     public void setUp() throws Exception {
-        //capture system streams
-        System.setOut(new PrintStream(outStream));
-        System.setErr(new PrintStream(errStream));
+        captureStreams();
     }
 
     @After
     public void tearDown() throws Exception {
-        //restore system streams
+        //restore system's streams
         System.setOut(sysOut);
         System.setErr(sysErr);
     }
 
     /**
-     * Test of main method, of class App.
+     * When given no arguments STDOUT must empty and STDERR must show the help
+     * message
      */
     @Test
-    public void testMain() {
-        /*
-        System.out.println("main");
-        Assert.assertEquals("main\n", outStream.toString());
-        */
+    public void testMainWithNoArguments() {
+        String[][] args_pool = new String[][]{null, {}};
+        for (int i = 0; i < args_pool.length; i++) {
+            captureStreams();
+            App.main(args_pool[i]);
+            Assert.assertEquals("", outStream.toString());
+            Assert.assertEquals(App.help + "\n", errStream.toString());
+        }
+    }
+
+    /**
+     * When given the wrong number of arguments STDOUT must be empty and STDERR
+     * shows a descriptive error and the help message
+     */
+    @Test
+    public void testMainWithWrongNumberOfArguments() {
+        String[][] args_pool = new String[][]{
+            {"first"},
+            {"first", "second"},
+            {"first", "second", "third", "fourth"}
+        };
         String[] args = null;
-        App.main(args);
-        Assert.assertEquals("Hello World!\n", outStream.toString());
+        String expectedError = """
+            Wrong number of arguments: Expected 3, given %s...
+            
+            %s
+            """;
+        for (int i = 0; i < args_pool.length; i++) {
+            args = args_pool[i];
+            captureStreams();
+            App.main(args);
+            Assert.assertEquals("", outStream.toString());
+            
+            Assert.assertEquals(
+                    expectedError.formatted(args.length, App.help), 
+                    errStream.toString()
+            );
+        }
+    }
+
+    /**
+     * Capture the system's stdout and stderr streams with clear buffers
+     */
+    private void captureStreams() {
+        outStream.reset();
+        errStream.reset();
+        System.setOut(new PrintStream(outStream));
+        System.setErr(new PrintStream(errStream));
     }
 }

@@ -21,7 +21,23 @@ package one.lemux.avgnjtingestor;
  * @author lemux
  */
 public class App {
+
+    public static final String help
+            = """
+        Usage:
+            java -jar <application>.jar <input_file> <field> <search_term>
+        
+        Example:
+            /path/to/java -jar /path/to/ingestor.jar /path/to/input.txt ID 12345678L""";
+
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        if (args == null || args.length == 0) {
+            System.err.println(help);
+        } else if (args.length != 3) {
+            System.err.println("Wrong number of arguments: Expected 3, given %s...\n".formatted(args.length));
+            System.err.println(help);
+        } else {
+            
+        }
     }
 }
