@@ -19,9 +19,13 @@ package one.lemux.avgnjtingestor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.nio.file.StandardOpenOption;
+import one.lemux.avgnjtingestor.exceptions.EmptyInputFileException;
+import one.lemux.avgnjtingestor.exceptions.InvalidInputFileException;
+import one.lemux.avgnjtingestor.exceptions.WrongArgumentsException;
+import one.lemux.avgnjtingestor.exceptions.WrongFormatException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -59,17 +63,20 @@ public class AppTest {
     }
 
     /**
-     * When given no arguments STDOUT must empty and STDERR must show the help
-     * message
+     * When given no arguments STDOUT must empty and STDERR must show a relevant
+     * error message and the usage help.
      */
     @Test
-    public void testMainWithNoArguments() {
+    public void testMain_whenNoArguments() {
         var args_pool = new String[][]{null, {}};
-        for (int i = 0; i < args_pool.length; i++) {
+        for (String[] args : args_pool) {
             captureStreams();
-            App.main(args_pool[i]);
+            App.main(args);
             assertEquals("", outStream.toString());
-            assertEquals(App.HELP + "\n", errStream.toString());
+            assertEquals(
+                    new WrongArgumentsException(App.argsParser.NO_ARGS_MESSAGE).getHintedMessage()
+                            + "\n" + App.argsParser.USAGE_HELP + "\n",
+                    errStream.toString());
         }
     }
 
@@ -78,26 +85,19 @@ public class AppTest {
      * shows a descriptive error and the help message
      */
     @Test
-    public void testMainWithWrongNumberOfArguments() {
+    public void testMain_whenWrongNumberOfArguments() {
         var args_pool = new String[][]{
             {"first"},
             {"first", "second"},
             {"first", "second", "third", "fourth"}
         };
-        var expectedError = """
-            Wrong number of arguments: Expected 3, given %s...
-            
-            %s
-            """;
-        String[] args = null;
-        for (int i = 0; i < args_pool.length; i++) {
-            args = args_pool[i];
+        for (String[] args : args_pool) {
             captureStreams();
             App.main(args);
             assertEquals("", outStream.toString());
-
             assertEquals(
-                    expectedError.formatted(args.length, App.HELP),
+                    new WrongArgumentsException(App.argsParser.WRONG_NUMBER_OF_ARGS_MESSAGE).getHintedMessage()
+                            + "\n" + App.argsParser.USAGE_HELP + "\n",
                     errStream.toString()
             );
         }
@@ -109,11 +109,11 @@ public class AppTest {
      * shows a descriptive error message
      */
     @Test
-    public void testMainWithWrongInputFile() {
+    public void testMain_whenWrongInputFile() {
         var args = new String[]{"/path/to/invalid.txt", "<field>", "<search_term>"};
         App.main(args);
         assertEquals("", outStream.toString());
-        assertEquals(App.ERR_WRONG_FILE.formatted(args[0]) + "\n", errStream.toString());
+        assertEquals(new InvalidInputFileException().getHintedMessage() + "\n", errStream.toString());
     }
 
     /**
@@ -122,13 +122,41 @@ public class AppTest {
      * error message
      */
     @Test
-    public void testMainWithEmptyInputFile() {
+    public void testMain_whenEmptyInputFile() {
         try {
             var tmpPath = Files.createTempFile(null, "input.txt");
             var args = new String[]{tmpPath.toString(), "<field>", "<search_term>"};
             App.main(args);
             assertEquals("", outStream.toString());
-            assertEquals(App.ERR_EMPTY_FILE.formatted(args[0]) + "\n", errStream.toString());
+            assertEquals(new EmptyInputFileException().getHintedMessage() + "\n", errStream.toString());
+            Files.deleteIfExists(tmpPath);
+        } catch (IOException ex) {
+            restoreStreams();
+            System.err.println(ex.getMessage());
+        }
+    }
+
+    /**
+     * When given an input file with not well formatted content then STDERR
+     * shows a descriptive error message
+     */
+    //@Test
+    public void testMain_whenInputFileIsNotFormatted() {
+        try {
+            var tmpPath = Files.createTempFile(null, "input.txt");
+            var contents = new String[]{
+                // cases with no format
+                "\n", "  ", "Test Line", "R data", "D With No Previous Format",
+                // cases with wrong format specification
+                "F", "F0", "F3", "F 1", "F-2",};
+
+            var args = new String[]{tmpPath.toString(), "<field>", "<search_term>"};
+            for (String content : contents) {
+                Files.writeString(tmpPath, content, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
+                App.main(args);
+                assertEquals(new WrongFormatException().getHintedMessage() + "\n", errStream.toString());
+            }
+            Files.deleteIfExists(tmpPath);
         } catch (IOException ex) {
             restoreStreams();
             System.err.println(ex.getMessage());

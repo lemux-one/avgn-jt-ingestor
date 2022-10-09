@@ -16,10 +16,11 @@
  */
 package one.lemux.avgnjtingestor;
 
+import one.lemux.avgnjtingestor.cli.ArgsParser;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import one.lemux.avgnjtingestor.exceptions.EmptyInputFileException;
+import one.lemux.avgnjtingestor.exceptions.InvalidInputFileException;
+import one.lemux.avgnjtingestor.exceptions.WrongArgumentsException;
 
 /**
  *
@@ -27,45 +28,34 @@ import java.nio.file.Paths;
  */
 public class App {
     
-    public static final String ERR_WRONG_ARGS = "Wrong number of arguments: Expected 3, given %s...\n";
-    public static final String ERR_WRONG_FILE = "The given input file (%s) does not exist or is not readable...";
-    public static final String ERR_EMPTY_FILE = "The given input file (%s) is empty...";
+    public static final ArgsParser argsParser = new ArgsParser();
 
-    public static final String HELP = """
-        Usage:
-            java -jar <application>.jar <input_file> <field> <search_term>
-        
-        Example:
-            /path/to/java -jar /path/to/ingestor.jar /path/to/input.txt ID 12345678L""";
-
+    /**
+     * Entry point for the application execution.
+     *
+     * If everything went right then the STDOUT shows the relevant output
+     * according to given arguments.
+     *
+     * All the handled exceptions will stream the relevant output to STDERR. Use
+     * pipes or similar techniques to capture the desired outputs. Custom
+     * defined exceptions and system runtime errors are treated differently: The
+     * former ones are shown in a formatted fashion accompanied by hints if
+     * relevant, while the later ones are prefixed by "Error: " with the short
+     * description provided by the exception itself.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
-        if (args == null || args.length == 0) {
-            System.err.println(HELP);
-        } else if (args.length != 3) {
-            System.err.println(ERR_WRONG_ARGS.formatted(args.length));
-            System.err.println(HELP);
-        } else {
-            // check input file before attempting to process it
-            Path inputPath = Paths.get(args[0]);
-            if (Files.exists(inputPath) && Files.isReadable(inputPath)) {
-                try {
-                    var bufferedReader = Files.newBufferedReader(inputPath);
-                    String line = bufferedReader.readLine();
-                    if (line != null) {
-                        //process input line by line
-                        while (line != null) {
-                            line = bufferedReader.readLine();
-                        }
-                    } else {
-                        System.err.println(ERR_EMPTY_FILE.formatted(args[0]));
-                    }
-                } catch (IOException ex) {
-                    System.err.println("Error reading input file: " + ex.getMessage());
-                    //TODO log stack trace and details in a file
-                }
-            } else {
-                System.err.println(ERR_WRONG_FILE.formatted(args[0]));
-            }
+        try {
+            argsParser.parse(args);
+            var ingestor = new DataIngestor(args[0]);
+        } catch (IOException ex) {
+            System.err.println("Error: " + ex.getMessage());
+        } catch (WrongArgumentsException ex) {
+            System.err.println(ex.getHintedMessage());
+            System.err.println(ArgsParser.USAGE_HELP);
+        } catch (InvalidInputFileException | EmptyInputFileException ex) {
+            System.err.println(ex.getHintedMessage());
         }
     }
 }
