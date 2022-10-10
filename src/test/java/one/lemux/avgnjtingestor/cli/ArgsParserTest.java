@@ -31,22 +31,22 @@ import static org.junit.Assert.*;
  * @author lemux
  */
 public class ArgsParserTest {
-    
+
     public ArgsParserTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -66,17 +66,59 @@ public class ArgsParserTest {
      * Test of parse method, of class ArgsParser.
      */
     @Test
-    public void testParse_withThreeRequiredArgumentsAndNoneProvided() throws Exception {
+    public void testParse_withThreeRequiredArgumentsAndNoneProvided() {
         System.out.println("parse_withThreeRequiredArgumentsAndNoneProvided");
-        String[] args = null;
+        String[] args = new String[]{};
         ArgsParser instance = new ArgsParser("dummyApp")
                 .addArg(new Argument("testArg1"))
                 .addArg(new Argument("testArg2"))
                 .addArg(new Argument("testArg3"));
         try {
             instance.parse(args);
-        } catch (Exception ex) {
-            assertTrue("NO_ARGS_EXCEPTION", ex instanceof WrongArgumentsException);
+            fail("No exception was thrown but s% was expected."
+                    .formatted(WrongArgumentsException.class.getName()));
+        } catch (WrongArgumentsException ex) {
+            assertEquals(instance.NO_ARGS_MESSAGE, ex.getMessage());
+        }
+    }
+
+    /**
+     * Test of parse method, of class ArgsParser.
+     */
+    @Test
+    public void testParse_withThreeRequiredArgumentsAndLessProvided() {
+        System.out.println("parse_withThreeRequiredArgumentsAndLessProvided");
+        String[] args = new String[]{"arg1", "arg2"};
+        ArgsParser instance = new ArgsParser("dummyApp")
+                .addArg(new Argument("testArg1"))
+                .addArg(new Argument("testArg2"))
+                .addArg(new Argument("testArg3"));
+        try {
+            instance.parse(args);
+            fail("No exception was thrown but s% was expected."
+                    .formatted(WrongArgumentsException.class.getName()));
+        } catch (WrongArgumentsException ex) {
+            assertEquals(instance.WRONG_NUMBER_OF_ARGS_MESSAGE, ex.getMessage());
+        }
+    }
+
+    /**
+     * Test of parse method, of class ArgsParser.
+     */
+    @Test
+    public void testParse_withThreeRequiredArgumentsAndMoreProvided() {
+        System.out.println("parse_withThreeRequiredArgumentsAndMoreProvided");
+        String[] args = new String[]{"arg1", "arg2", "arg3", "arg4"};
+        ArgsParser instance = new ArgsParser("dummyApp")
+                .addArg(new Argument("testArg1"))
+                .addArg(new Argument("testArg2"))
+                .addArg(new Argument("testArg3"));
+        try {
+            instance.parse(args);
+            fail("No exception was thrown but s% was expected."
+                    .formatted(WrongArgumentsException.class.getName()));
+        } catch (WrongArgumentsException ex) {
+            assertEquals(instance.WRONG_NUMBER_OF_ARGS_MESSAGE, ex.getMessage());
         }
     }
 
@@ -116,5 +158,5 @@ public class ArgsParserTest {
         var instance = new ArgsParser("dummyApp").addArg(arg1);
         assertEquals(arg1, instance.getArgumentList().get(0));
     }
-    
+
 }
