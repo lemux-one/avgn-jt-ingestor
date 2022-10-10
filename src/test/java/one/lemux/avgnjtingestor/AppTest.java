@@ -54,12 +54,12 @@ public class AppTest {
 
     @Before
     public void setUp() throws Exception {
-        captureStreams();
+        //captureStreams();
     }
 
     @After
     public void tearDown() throws Exception {
-        restoreStreams();
+        //restoreStreams();
     }
 
     /**
@@ -68,6 +68,8 @@ public class AppTest {
      */
     @Test
     public void testMain_whenNoArguments() {
+        System.out.println("main_whenNoArguments");
+        captureStreams();
         var args_pool = new String[][]{null, {}};
         for (String[] args : args_pool) {
             captureStreams();
@@ -75,9 +77,10 @@ public class AppTest {
             assertEquals("", outStream.toString());
             assertEquals(
                     new WrongArgumentsException(App.argsParser.NO_ARGS_MESSAGE).getHintedMessage()
-                            + "\n" + App.argsParser.USAGE_HELP + "\n",
+                    + "\n" + App.argsParser.getUsageHelp() + "\n",
                     errStream.toString());
         }
+        restoreStreams();
     }
 
     /**
@@ -86,6 +89,8 @@ public class AppTest {
      */
     @Test
     public void testMain_whenWrongNumberOfArguments() {
+        System.out.println("main_whenWrongNumberOfArguments");
+        captureStreams();
         var args_pool = new String[][]{
             {"first"},
             {"first", "second"},
@@ -97,10 +102,11 @@ public class AppTest {
             assertEquals("", outStream.toString());
             assertEquals(
                     new WrongArgumentsException(App.argsParser.WRONG_NUMBER_OF_ARGS_MESSAGE).getHintedMessage()
-                            + "\n" + App.argsParser.USAGE_HELP + "\n",
+                    + "\n" + App.argsParser.getUsageHelp() + "\n",
                     errStream.toString()
             );
         }
+        restoreStreams();
     }
 
     /**
@@ -110,10 +116,13 @@ public class AppTest {
      */
     @Test
     public void testMain_whenWrongInputFile() {
+        System.out.println("main_whenWrongInputFile");
+        captureStreams();
         var args = new String[]{"/path/to/invalid.txt", "<field>", "<search_term>"};
         App.main(args);
         assertEquals("", outStream.toString());
         assertEquals(new InvalidInputFileException().getHintedMessage() + "\n", errStream.toString());
+        restoreStreams();
     }
 
     /**
@@ -123,9 +132,11 @@ public class AppTest {
      */
     @Test
     public void testMain_whenEmptyInputFile() {
+        System.out.println("main_whenEmptyInputFile");
+        captureStreams();
         try {
             var tmpPath = Files.createTempFile(null, "input.txt");
-            var args = new String[]{tmpPath.toString(), "<field>", "<search_term>"};
+            var args = new String[]{tmpPath.toString(), "city", "Barcelona"};
             App.main(args);
             assertEquals("", outStream.toString());
             assertEquals(new EmptyInputFileException().getHintedMessage() + "\n", errStream.toString());
@@ -133,6 +144,8 @@ public class AppTest {
         } catch (IOException ex) {
             restoreStreams();
             System.err.println(ex.getMessage());
+        } finally {
+            restoreStreams();
         }
     }
 
@@ -142,6 +155,8 @@ public class AppTest {
      */
     //@Test
     public void testMain_whenInputFileIsNotFormatted() {
+        System.out.println("main_whenInputFileIsNotFormatted");
+        captureStreams();
         try {
             var tmpPath = Files.createTempFile(null, "input.txt");
             var contents = new String[]{
@@ -150,7 +165,7 @@ public class AppTest {
                 // cases with wrong format specification
                 "F", "F0", "F3", "F 1", "F-2",};
 
-            var args = new String[]{tmpPath.toString(), "<field>", "<search_term>"};
+            var args = new String[]{tmpPath.toString(), "ID", "54645987"};
             for (String content : contents) {
                 Files.writeString(tmpPath, content, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
                 App.main(args);
@@ -160,6 +175,8 @@ public class AppTest {
         } catch (IOException ex) {
             restoreStreams();
             System.err.println(ex.getMessage());
+        } finally {
+            restoreStreams();
         }
     }
 

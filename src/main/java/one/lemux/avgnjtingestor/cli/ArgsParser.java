@@ -16,35 +16,67 @@
  */
 package one.lemux.avgnjtingestor.cli;
 
+import java.util.ArrayList;
+import java.util.List;
 import one.lemux.avgnjtingestor.exceptions.WrongArgumentsException;
 
 /**
  * Use this class to process given arguments for CLI applications
- * 
+ *
  * @author lemux
  */
 public class ArgsParser {
-    
+
     public static final String NO_ARGS_MESSAGE = "No arguments provided.";
     public static final String WRONG_NUMBER_OF_ARGS_MESSAGE = "Only 3 arguments must be provided.";
-    
-    public static final String USAGE_HELP = """
-        Usage:
-            java -jar <application>.jar <input_file> <field> <search_term>
-        
-        Example:
-            /path/to/java -jar /path/to/ingestor.jar /path/to/input.txt ID 12345678L""";
-    
-    
-    public ArgsParser() {
-        
+
+    private final List<Argument> arguments;
+    private final String cliAppName;
+    private final StringBuilder argsStructure;
+
+    public ArgsParser(String cliAppName) {
+        this.cliAppName = cliAppName;
+        this.arguments = new ArrayList();
+        this.argsStructure = new StringBuilder();
     }
-    
+
+    public ArgsParser addArg(Argument arg) {
+        arguments.add(arg);
+        generateArgsStructure();
+        return this;
+    }
+
     public void parse(String[] args) throws WrongArgumentsException {
-        if (args == null || args.length == 0) {
+        if (!arguments.isEmpty() && (args == null || args.length == 0)) {
             throw new WrongArgumentsException(NO_ARGS_MESSAGE);
-        } else if (args.length != 3) {
+        }
+        if (args.length != arguments.size()) {
             throw new WrongArgumentsException(WRONG_NUMBER_OF_ARGS_MESSAGE);
         }
+
+    }
+    
+    public List<Argument> getArgumentList() {
+        return arguments;
+    }
+
+    public String getUsageHelp() {
+        String usage = """
+            Usage:
+                java -jar %s.jar %s""".formatted(cliAppName, getArgumentsStructure());
+        
+        return usage;
+    }
+    
+    public String getArgumentsStructure() {
+        return argsStructure.toString();
+    }
+    
+    private void generateArgsStructure() {
+        argsStructure.setLength(0);
+        for (Argument arg : arguments) {
+            argsStructure.append("<").append(arg.getName()).append("> ");
+        }
+        argsStructure.setLength(argsStructure.length()-1);
     }
 }
