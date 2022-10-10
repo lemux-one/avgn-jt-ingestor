@@ -16,7 +16,6 @@
  */
 package one.lemux.avgnjtingestor;
 
-import one.lemux.avgnjtingestor.cli.Argument;
 import one.lemux.avgnjtingestor.cli.ArgsParser;
 import java.io.IOException;
 import one.lemux.avgnjtingestor.exceptions.EmptyInputFileException;
@@ -31,9 +30,9 @@ public class App {
 
     public static final ArgsParser argsParser
             = new ArgsParser("avgn-jt-ingestor")
-                    .addArg(new Argument("inputFile"))
-                    .addArg(new Argument("searchField"))
-                    .addArg(new Argument("searchTerm"));
+                    .addPositionalArgument("inputFile")
+                    .addPositionalArgument("searchField")
+                    .addPositionalArgument("searchTerm");
 
     /**
      * Entry point for the application execution.
@@ -53,7 +52,11 @@ public class App {
     public static void main(String[] args) {
         try {
             argsParser.parse(args);
-            var ingestor = new DataIngestor(args[0]);
+            var ingestor = new DataIngestor(
+                    argsParser.getPositionalArgumentValue("inputFile"));
+            ingestor.ingest(new DataQuery(
+                    argsParser.getPositionalArgumentValue("searchField"), 
+                    argsParser.getPositionalArgumentValue("searchTerm")));
         } catch (IOException ex) {
             System.err.println("Error: " + ex.getMessage());
         } catch (WrongArgumentsException ex) {

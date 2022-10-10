@@ -16,16 +16,12 @@
  */
 package one.lemux.avgnjtingestor;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
+import static one.lemux.avgnjtingestor.IOStreamsManager.*;
 import one.lemux.avgnjtingestor.exceptions.EmptyInputFileException;
 import one.lemux.avgnjtingestor.exceptions.InvalidInputFileException;
 import one.lemux.avgnjtingestor.exceptions.WrongArgumentsException;
-import one.lemux.avgnjtingestor.exceptions.WrongFormatException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;
@@ -39,11 +35,6 @@ import org.junit.Test;
  */
 public class AppTest {
 
-    private final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-    private final ByteArrayOutputStream errStream = new ByteArrayOutputStream();
-    private final PrintStream sysOut = System.out;
-    private final PrintStream sysErr = System.err;
-
     @BeforeClass
     public static void setUpClass() throws Exception {
     }
@@ -54,12 +45,10 @@ public class AppTest {
 
     @Before
     public void setUp() throws Exception {
-        //captureStreams();
     }
 
     @After
     public void tearDown() throws Exception {
-        //restoreStreams();
     }
 
     /**
@@ -149,52 +138,4 @@ public class AppTest {
         }
     }
 
-    /**
-     * When given an input file with not well formatted content then STDERR
-     * shows a descriptive error message
-     */
-    //@Test
-    public void testMain_whenInputFileIsNotFormatted() {
-        System.out.println("main_whenInputFileIsNotFormatted");
-        captureStreams();
-        try {
-            var tmpPath = Files.createTempFile(null, "input.txt");
-            var contents = new String[]{
-                // cases with no format
-                "\n", "  ", "Test Line", "R data", "D With No Previous Format",
-                // cases with wrong format specification
-                "F", "F0", "F3", "F 1", "F-2",};
-
-            var args = new String[]{tmpPath.toString(), "ID", "54645987"};
-            for (String content : contents) {
-                Files.writeString(tmpPath, content, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
-                App.main(args);
-                assertEquals(new WrongFormatException().getHintedMessage() + "\n", errStream.toString());
-            }
-            Files.deleteIfExists(tmpPath);
-        } catch (IOException ex) {
-            restoreStreams();
-            System.err.println(ex.getMessage());
-        } finally {
-            restoreStreams();
-        }
-    }
-
-    /**
-     * Capture the system's stdout and stderr streams with clear buffers
-     */
-    private void captureStreams() {
-        outStream.reset();
-        errStream.reset();
-        System.setOut(new PrintStream(outStream));
-        System.setErr(new PrintStream(errStream));
-    }
-
-    /**
-     * Restore the system's stdout and stderr streams
-     */
-    private void restoreStreams() {
-        System.setOut(sysOut);
-        System.setErr(sysErr);
-    }
 }

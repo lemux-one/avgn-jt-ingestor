@@ -57,7 +57,7 @@ public class DataIngestor {
         }
     }
 
-    public void ingest() {
-
+    public void ingest(DataQuery query) {
+        
     }
 }

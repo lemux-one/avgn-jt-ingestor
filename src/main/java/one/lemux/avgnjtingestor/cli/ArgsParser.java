@@ -28,53 +28,70 @@ import one.lemux.avgnjtingestor.exceptions.WrongArgumentsException;
 public class ArgsParser {
 
     public static final String NO_ARGS_MESSAGE = "No arguments provided.";
-    public static final String WRONG_NUMBER_OF_ARGS_MESSAGE = "Only 3 arguments must be provided.";
+    public static final String WRONG_NUMBER_OF_ARGS_MESSAGE = "Three and only three arguments must be provided.";
 
-    private final List<Argument> arguments;
+    private final List<Argument> positionalArguments;
     private final String cliAppName;
     private final StringBuilder argsStructure;
 
     public ArgsParser(String cliAppName) {
         this.cliAppName = cliAppName;
-        this.arguments = new ArrayList();
+        this.positionalArguments = new ArrayList();
         this.argsStructure = new StringBuilder();
     }
+    
+    public ArgsParser addPositionalArgument(String argName) {
+        return addPositionalArgument(new Argument(argName));
+    }
 
-    public ArgsParser addArg(Argument arg) {
-        arguments.add(arg);
-        generateArgsStructure();
+    public ArgsParser addPositionalArgument(Argument arg) {
+        positionalArguments.add(arg);
+        generateCLIStructure();
         return this;
     }
 
     public void parse(String[] args) throws WrongArgumentsException {
-        if (!arguments.isEmpty() && (args == null || args.length == 0)) {
+        if (!positionalArguments.isEmpty() && (args == null || args.length == 0)) {
             throw new WrongArgumentsException(NO_ARGS_MESSAGE);
         }
-        if (args.length != arguments.size()) {
+        if (args.length != positionalArguments.size()) {
             throw new WrongArgumentsException(WRONG_NUMBER_OF_ARGS_MESSAGE);
         }
-
+        
+        for (int i = 0; i < args.length; i++) {
+            positionalArguments.get(i).setValue(args[i]);
+        }
     }
     
-    public List<Argument> getArgumentList() {
-        return arguments;
+    public String getPositionalArgumentValue(String argumentName) {
+        String value = null;
+        int i = 0;
+        while (value == null && i < positionalArguments.size()) {
+            if (positionalArguments.get(i).getName().equals(argumentName))
+                value = positionalArguments.get(i).getValue();
+        }
+        return value;
+    }
+    
+    public List<Argument> getPositionalArgumentList() {
+        return positionalArguments;
     }
 
     public String getUsageHelp() {
         String usage = """
             Usage:
-                java -jar %s.jar %s""".formatted(cliAppName, getArgumentsStructure());
+                java -jar %s.jar %s""".formatted(cliAppName, getCLIStructure());
         
         return usage;
     }
     
-    public String getArgumentsStructure() {
+    public String getCLIStructure() {
         return argsStructure.toString();
     }
     
-    private void generateArgsStructure() {
+    private void generateCLIStructure() {
         argsStructure.setLength(0);
-        for (Argument arg : arguments) {
+        for (Argument arg : positionalArguments) {
             argsStructure.append("<").append(arg.getName()).append("> ");
         }
         argsStructure.setLength(argsStructure.length()-1);

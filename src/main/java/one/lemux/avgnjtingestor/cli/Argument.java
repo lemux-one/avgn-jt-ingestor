@@ -16,6 +16,8 @@
  */
 package one.lemux.avgnjtingestor.cli;
 
+import java.util.Objects;
+
 /**
  *
  * @author lemux
@@ -23,6 +25,15 @@ package one.lemux.avgnjtingestor.cli;
 public class Argument {
 
     private String name;
+    private String value;
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     public Argument(String name) {
         this.name = name;
@@ -35,6 +46,34 @@ public class Argument {
     public void setName(String name) {
         this.name = name;
     }
-    
-    
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Argument other = (Argument) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        return Objects.equals(this.value, other.value);
+    }
+
+    @Override
+    public String toString() {
+        return "Argument{" + "name=" + name + ", value=" + value + '}';
+    }
+
 }

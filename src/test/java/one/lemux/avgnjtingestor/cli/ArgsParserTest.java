@@ -58,8 +58,8 @@ public class ArgsParserTest {
     public void testAddArg() {
         System.out.println("addArg");
         var arg = new Argument("testArgument");
-        var result = new ArgsParser("dummyApp").addArg(arg);
-        assertEquals(arg, result.getArgumentList().get(0));
+        var result = new ArgsParser("dummyApp").addPositionalArgument(arg);
+        assertEquals(arg, result.getPositionalArgumentList().get(0));
     }
 
     /**
@@ -70,9 +70,9 @@ public class ArgsParserTest {
         System.out.println("parse_withThreeRequiredArgumentsAndNoneProvided");
         String[] args = new String[]{};
         ArgsParser instance = new ArgsParser("dummyApp")
-                .addArg(new Argument("testArg1"))
-                .addArg(new Argument("testArg2"))
-                .addArg(new Argument("testArg3"));
+                .addPositionalArgument(new Argument("testArg1"))
+                .addPositionalArgument(new Argument("testArg2"))
+                .addPositionalArgument(new Argument("testArg3"));
         try {
             instance.parse(args);
             fail("No exception was thrown but s% was expected."
@@ -90,9 +90,9 @@ public class ArgsParserTest {
         System.out.println("parse_withThreeRequiredArgumentsAndLessProvided");
         String[] args = new String[]{"arg1", "arg2"};
         ArgsParser instance = new ArgsParser("dummyApp")
-                .addArg(new Argument("testArg1"))
-                .addArg(new Argument("testArg2"))
-                .addArg(new Argument("testArg3"));
+                .addPositionalArgument(new Argument("testArg1"))
+                .addPositionalArgument(new Argument("testArg2"))
+                .addPositionalArgument(new Argument("testArg3"));
         try {
             instance.parse(args);
             fail("No exception was thrown but s% was expected."
@@ -110,9 +110,9 @@ public class ArgsParserTest {
         System.out.println("parse_withThreeRequiredArgumentsAndMoreProvided");
         String[] args = new String[]{"arg1", "arg2", "arg3", "arg4"};
         ArgsParser instance = new ArgsParser("dummyApp")
-                .addArg(new Argument("testArg1"))
-                .addArg(new Argument("testArg2"))
-                .addArg(new Argument("testArg3"));
+                .addPositionalArgument(new Argument("testArg1"))
+                .addPositionalArgument(new Argument("testArg2"))
+                .addPositionalArgument(new Argument("testArg3"));
         try {
             instance.parse(args);
             fail("No exception was thrown but s% was expected."
@@ -129,8 +129,8 @@ public class ArgsParserTest {
     public void testGetUsageHelp() {
         System.out.println("getUsageHelp");
         var instance = new ArgsParser("dummyApp")
-                .addArg(new Argument("arg1"))
-                .addArg(new Argument("arg2"));
+                .addPositionalArgument(new Argument("arg1"))
+                .addPositionalArgument(new Argument("arg2"));
         var expResult = """
             Usage:
                 java -jar dummyApp.jar <arg1> <arg2>""";
@@ -144,8 +144,8 @@ public class ArgsParserTest {
     public void testGetArgumentsStructure() {
         System.out.println("getArgumentsStructure");
         var instance = new ArgsParser("dummyApp")
-                .addArg(new Argument("arg1"));
-        assertEquals("<arg1>", instance.getArgumentsStructure());
+                .addPositionalArgument(new Argument("arg1"));
+        assertEquals("<arg1>", instance.getCLIStructure());
     }
 
     /**
@@ -155,8 +155,8 @@ public class ArgsParserTest {
     public void testGetArgumentList() {
         System.out.println("getArgumentList");
         var arg1 = new Argument("arg1");
-        var instance = new ArgsParser("dummyApp").addArg(arg1);
-        assertEquals(arg1, instance.getArgumentList().get(0));
+        var instance = new ArgsParser("dummyApp").addPositionalArgument(arg1);
+        assertEquals(arg1, instance.getPositionalArgumentList().get(0));
     }
 
 }
