@@ -113,6 +113,9 @@ public class DataIngestor {
             for (int i = 0; i < dataRow.length; i++) {
                 dataRow[i] = dataRow[i].strip();
             }
+            if (dataRow.length == 3) {
+                dataRow[2] = dataRow[2].replaceAll("-", "");
+            }
         }
     }
 
