@@ -66,13 +66,11 @@ public class DataIngestorTest {
         try {
             System.out.println("Preparing temp file with content");
             var tmpPath = Files.createTempFile(null, "input.txt");
-            var contents = new String[]{
-                "F1",
-                "D Erica Burns,BARCELONA,93654902Y"
-            };
-            for (var content : contents) {
-                Files.writeString(tmpPath, content, StandardCharsets.UTF_8, StandardOpenOption.TRUNCATE_EXISTING);
-            }
+            var content = """
+                F1
+                D Erica Burns,BARCELONA,93654902Y
+                """;
+            Files.writeString(tmpPath, content, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
             
             System.out.println("Ingesting given temp file as input: " + tmpPath.toString());
             var query = new DataQuery("CITY", "BARCELONA");

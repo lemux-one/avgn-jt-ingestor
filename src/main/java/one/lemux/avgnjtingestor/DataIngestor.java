@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import one.lemux.avgnjtingestor.exceptions.EmptyInputFileException;
 import one.lemux.avgnjtingestor.exceptions.InvalidInputFileException;
 
@@ -31,7 +32,10 @@ import one.lemux.avgnjtingestor.exceptions.InvalidInputFileException;
 public class DataIngestor {
 
     private final Path pathToFile;
-    private BufferedReader bufferedReader = null;
+    private BufferedReader bufferedReader;
+    private DataFormat currentFormat;
+    private String currentLine;
+    private String[] dataRow;
 
     /**
      * Creates a DataIngestor given an input text file. If the file is valid and
@@ -48,7 +52,7 @@ public class DataIngestor {
         this.pathToFile = Path.of(inputFile);
         if (Files.isRegularFile(pathToFile) && Files.isReadable(pathToFile)) {
             if (Files.size(pathToFile) > 0) {
-                this.bufferedReader = Files.newBufferedReader(this.pathToFile, StandardCharsets.UTF_8);
+                bufferedReader = Files.newBufferedReader(this.pathToFile, StandardCharsets.UTF_8);
             } else {
                 throw new EmptyInputFileException();
             }
@@ -57,7 +61,63 @@ public class DataIngestor {
         }
     }
 
-    public void ingest(DataQuery query) {
-        
+    public void ingest(DataQuery query) throws IOException {
+        currentLine = bufferedReader.readLine();
+        while (currentLine != null) {
+            if (currentLine.startsWith("F")) {
+                switch (currentLine) {
+                    case "F1":
+                        currentFormat = DataFormat.F1;
+                        break;
+                    case "F2":
+                        currentFormat = DataFormat.F2;
+                        break;
+                    default:
+                    // TODO handle invalid format specification
+                }
+            } else if (currentLine.startsWith("D")) {
+                extractData();
+                if (dataRow != null && dataRow.length == 3) {
+                    applyQuery(query);
+                } else {
+                    // TODO handle line with invalid data
+                }
+            } else {
+                // TODO handle unknown type of line
+            }
+            currentLine = bufferedReader.readLine();
+        }
+    }
+
+    private void applyQuery(DataQuery query) {
+        if ("CITY".equals(query.getSearchField())) {
+            if (query.getSearchTerm().equals(dataRow[1])) {
+                System.out.println("%s,%s".formatted(dataRow[0], dataRow[2]));
+            }
+        } else if ("ID".equals(query.getSearchField())) {
+            if (query.getSearchTerm().equals(dataRow[2])) {
+                System.out.println(dataRow[1]);
+            }
+        }
+    }
+
+    private void extractData() {
+        dataRow = switch (currentFormat) {
+            case F1 ->
+                currentLine.substring(1).split(",");
+            case F2 ->
+                currentLine.substring(1).split(" ; ");
+            default ->
+                null;
+        };
+        if (dataRow != null) {
+            for (int i = 0; i < dataRow.length; i++) {
+                dataRow[i] = dataRow[i].strip();
+            }
+        }
+    }
+
+    private enum DataFormat {
+        F1, F2
     }
 }
