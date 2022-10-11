@@ -170,4 +170,38 @@ public class DataIngestorTest {
             fail("The temp input file was empty or not accessible");
         }
     }
+    
+    /**
+     * Test of ingest method, of class DataIngestor.
+     */
+    @Test
+    public void testIngest_withExampleDataAndIdQuery() {
+        System.out.println("ingest_withExampleDataAndIdQuery");
+        try {
+            System.out.println("Preparing temp file with content");
+            var tmpPath = Files.createTempFile(null, "input.txt");
+            Files.writeString(tmpPath, INPUT_EXAMPLE_DATA, StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+            
+            System.out.println("Ingesting given temp file as input: " + tmpPath.toString());
+            var query = new DataQuery("ID", "54808168L");
+            DataIngestor instance = new DataIngestor(tmpPath.toString());
+            
+            var expected = """
+                MADRID 
+                BARCELONA 
+                OVIEDO
+                """;
+            
+            captureStreams();
+            instance.ingest(query);
+            var result = outStream.toString();
+            restoreStreams();
+            Files.deleteIfExists(tmpPath);
+            assertEquals(expected, result);
+        } catch (IOException ex) {
+            fail(ex.getMessage());
+        } catch (InvalidInputFileException | EmptyInputFileException ex) {
+            fail("The temp input file was empty or not accessible");
+        }
+    }
 }
