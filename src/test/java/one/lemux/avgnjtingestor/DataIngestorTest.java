@@ -155,11 +155,7 @@ public class DataIngestorTest {
             DataIngestor instance = new DataIngestor(tmpPath.toString());
             
             var expected = """
-                Mitchell Newton,25384390A 
-                Rhonda Hopkins,54315871Z 
-                Alexander Arnold,21743514G 
-                Susan Holland,04810023X 
-                Jake Salazar,38399984N
+                Russell Pope,69429384C
                 """;
             
             captureStreams();
