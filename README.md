@@ -13,6 +13,7 @@ This utility takes an input file (pointed via CLI arguments) and process it to e
 java -jar application.jar input.txt CITY CARTAGENA
 
 ## Input file example
+```
 F1 
 D Erica Burns,BARCELONA,93654902Y 
 D Lucy Mcgee,LONDON,51011156P 
@@ -31,6 +32,7 @@ D Rhonda Hopkins ; BARCELONA ; 54315871-Z
 D Taylor Matthews ; LISBOA ; 58202263-G 
 D Shelley Payne ; MADRID ; 54808168-L 
 D Johnathan Cooper ; PARIS ; 10863096-N
+```
 
 ## TODOs
  - Use Threads and semaphores to implement the searching engine to provide better performance and inform the user about progress in processing.
